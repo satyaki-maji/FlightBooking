@@ -4,6 +4,7 @@ import com.ebay.assessment.flight.booking.domain.Booking;
 import com.ebay.assessment.flight.booking.domain.Flight;
 import com.ebay.assessment.flight.booking.domain.Passenger;
 import com.ebay.assessment.flight.booking.exception.FlightFullyBookedException;
+import com.ebay.assessment.flight.booking.repository.BookingRepository;
 import com.ebay.assessment.flight.booking.repository.FlightRepository;
 import com.ebay.assessment.flight.booking.repository.PassengerRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -35,6 +37,7 @@ public class BookingService {
 
     private final FlightRepository    flightRepository;
     private final PassengerRepository passengerRepository;
+    private final BookingRepository   bookingRepository;
 
     /* ------------------------------------------------------------------ */
     /*  Booking                                                           */
@@ -107,11 +110,85 @@ public class BookingService {
                 .bookingTimestamp(LocalDateTime.now())
                 .build();
 
+        // 5. Persist the booking ───────────────────────────────────────
+        bookingRepository.save(booking);
+
         log.info("Booking [{}] confirmed – passenger [{}] on flight [{}], seat [{}]",
                 booking.getBookingId(),
                 passenger.getPassengerId(),
                 flightNumber,
                 seatNumber);
+
+        return booking;
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Query                                                             */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Looks up a single booking by its unique identifier.
+     *
+     * @param bookingId the booking's unique ID
+     * @return an {@link Optional} containing the booking if found,
+     *         or {@link Optional#empty()} otherwise
+     */
+    public Optional<Booking> getBookingById(String bookingId) {
+        return bookingRepository.findById(bookingId);
+    }
+
+    /* ------------------------------------------------------------------ */
+    /*  Cancellation                                                      */
+    /* ------------------------------------------------------------------ */
+
+    /**
+     * Cancels an existing booking and returns the claimed seat back to
+     * the flight's available-seat pool.
+     *
+     * <h4>Algorithm</h4>
+     * <ol>
+     *   <li>Retrieve the {@link Booking} by its ID — fail fast with
+     *       {@link NoSuchElementException} if it does not exist.</li>
+     *   <li>Remove the booking from the {@link BookingRepository}.</li>
+     *   <li>Resolve the associated {@link Flight} from the
+     *       {@link FlightRepository} — fail fast if the flight no
+     *       longer exists.</li>
+     *   <li>Atomically return the previously assigned seat number to
+     *       the flight's {@link java.util.concurrent.ConcurrentLinkedQueue}
+     *       via {@code offer()}, making it immediately available for
+     *       re-booking by another thread.</li>
+     * </ol>
+     *
+     * @param bookingId the unique identifier of the booking to cancel
+     * @return the cancelled {@link Booking}
+     * @throws NoSuchElementException if no booking or associated flight
+     *                                with the given identifiers exists
+     */
+    public Booking cancelBooking(UUID bookingId) {
+
+        // 1. Retrieve the booking ────────────────────────────────────────
+        Booking booking = bookingRepository.findById(bookingId.toString())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Booking not found: " + bookingId));
+
+        // 2. Remove the booking from the repository ─────────────────────
+        bookingRepository.deleteById(bookingId.toString());
+
+        log.info("Booking [{}] removed from repository", bookingId);
+
+        // 3. Locate the matching flight ─────────────────────────────────
+        String flightNumber = booking.getFlight().getFlightNumber();
+        Flight flight = flightRepository.findByFlightNumber(flightNumber)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "Flight not found: " + flightNumber));
+
+        // 4. Atomically return the seat to the flight's pool ────────────
+        flight.getAvailableSeatNumbers().offer(booking.getSeatNumber());
+
+        log.info("Booking [{}] cancelled – seat [{}] returned to flight [{}]",
+                bookingId,
+                booking.getSeatNumber(),
+                flightNumber);
 
         return booking;
     }
