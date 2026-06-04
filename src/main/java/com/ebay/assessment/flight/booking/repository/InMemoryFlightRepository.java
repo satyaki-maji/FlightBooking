@@ -110,10 +110,6 @@ public class InMemoryFlightRepository implements FlightRepository {
     }
 
     /* ------------------------------------------------------------------ */
-    /*  FlightRepository contract                                         */
-    /* ------------------------------------------------------------------ */
-
-    /* ------------------------------------------------------------------ */
     /*  Seat-generation helper                                            */
     /* ------------------------------------------------------------------ */
 
@@ -169,5 +165,10 @@ public class InMemoryFlightRepository implements FlightRepository {
     public Flight save(Flight flight) {
         store.put(flight.getFlightNumber(), flight);
         return flight;
+    }
+
+    @Override
+    public boolean deleteByFlightNumber(String flightNumber) {
+        return store.remove(flightNumber) != null;
     }
 }

@@ -56,4 +56,14 @@ public interface FlightRepository {
      * @return the flight that was saved
      */
     Flight save(Flight flight);
+
+    /**
+     * Removes the flight identified by the given flight number from
+     * the store, if it exists.
+     *
+     * @param flightNumber the IATA-style flight number to delete
+     * @return {@code true} if the flight was present and removed,
+     *         {@code false} if no such flight existed
+     */
+    boolean deleteByFlightNumber(String flightNumber);
 }
