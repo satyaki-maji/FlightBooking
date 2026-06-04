@@ -46,6 +46,23 @@ public interface BookingRepository {
     List<Booking> findAll();
 
     /**
+     * Searches for bookings whose passenger matches the given name
+     * and/or mobile number.
+     *
+     * <p>Both parameters are optional: when a parameter is {@code null}
+     * or blank it is treated as "match anything".  Matching on
+     * {@code passengerName} is case-insensitive and uses
+     * substring/contains semantics; {@code mobile} must be an exact
+     * match.</p>
+     *
+     * @param passengerName full or partial passenger name (nullable)
+     * @param mobile        exact mobile number (nullable)
+     * @return bookings matching the supplied criteria; may be empty,
+     *         never {@code null}
+     */
+    List<Booking> findByPassengerNameAndMobile(String passengerName, String mobile);
+
+    /**
      * Removes the booking identified by the given ID from the store,
      * if it exists.
      *

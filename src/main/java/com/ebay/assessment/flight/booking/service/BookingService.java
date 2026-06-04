@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -135,6 +136,21 @@ public class BookingService {
      */
     public Optional<Booking> getBookingById(String bookingId) {
         return bookingRepository.findById(bookingId);
+    }
+
+    /**
+     * Searches for bookings by passenger name and/or mobile number.
+     *
+     * <p>Both parameters are optional: pass {@code null} or blank to
+     * skip that filter.  Name matching is case-insensitive and uses
+     * substring/contains semantics; mobile must be an exact match.</p>
+     *
+     * @param passengerName full or partial passenger name (nullable)
+     * @param mobile        exact mobile number (nullable)
+     * @return matching bookings; may be empty, never {@code null}
+     */
+    public List<Booking> searchBookings(String passengerName, String mobile) {
+        return bookingRepository.findByPassengerNameAndMobile(passengerName, mobile);
     }
 
     /* ------------------------------------------------------------------ */

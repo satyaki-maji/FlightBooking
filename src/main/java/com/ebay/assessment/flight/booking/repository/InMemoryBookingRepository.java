@@ -51,6 +51,29 @@ public class InMemoryBookingRepository implements BookingRepository {
     }
 
     @Override
+    public List<Booking> findByPassengerNameAndMobile(String passengerName, String mobile) {
+        boolean filterByName   = passengerName != null && !passengerName.isBlank();
+        boolean filterByMobile = mobile != null && !mobile.isBlank();
+
+        return store.values().stream()
+                .filter(b -> {
+                    if (filterByName
+                            && !b.getPassenger().getFullName()
+                                 .toLowerCase()
+                                 .contains(passengerName.toLowerCase())) {
+                        return false;
+                    }
+                    if (filterByMobile
+                            && !b.getPassenger().getMobileNumber()
+                                 .equals(mobile)) {
+                        return false;
+                    }
+                    return true;
+                })
+                .toList();
+    }
+
+    @Override
     public boolean deleteById(String bookingId) {
         boolean removed = store.remove(bookingId) != null;
         if (removed) {
