@@ -1,5 +1,6 @@
 package com.ebay.assessment.flight.booking.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Value;
 
@@ -33,7 +34,6 @@ public class Flight {
     Duration journeyDuration;
     String sourceCity;
     String destinationCity;
-    int totalCapacity;
 
     /**
      * Thread-safe queue of seat numbers still available for booking on
@@ -45,5 +45,6 @@ public class Flight {
      * to atomically claim the next available seat; when the queue is
      * empty the flight is fully booked.</p>
      */
+    @JsonIgnore
     ConcurrentLinkedQueue<String> availableSeatNumbers;
 }

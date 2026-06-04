@@ -59,7 +59,6 @@ public class InMemoryFlightRepository implements FlightRepository {
                 .journeyDuration(Duration.between(dep1, arr1))   // PT2H45M
                 .sourceCity("Bengaluru")
                 .destinationCity("New Delhi")
-                .totalCapacity(180)
                 .availableSeatNumbers(buildSeatQueue())
                 .build();
 
@@ -78,7 +77,6 @@ public class InMemoryFlightRepository implements FlightRepository {
                 .journeyDuration(Duration.between(dep2, arr2))   // PT2H10M
                 .sourceCity("New Delhi")
                 .destinationCity("Mumbai")
-                .totalCapacity(220)
                 .availableSeatNumbers(buildSeatQueue())
                 .build();
 
@@ -97,7 +95,6 @@ public class InMemoryFlightRepository implements FlightRepository {
                 .journeyDuration(Duration.between(dep3, arr3))   // PT2H45M
                 .sourceCity("Mumbai")
                 .destinationCity("Kolkata")
-                .totalCapacity(200)
                 .availableSeatNumbers(buildSeatQueue())
                 .build();
 
