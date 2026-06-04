@@ -3,7 +3,6 @@ package com.ebay.assessment.flight.booking.domain;
 import lombok.Builder;
 import lombok.Value;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
